@@ -11,6 +11,7 @@
 #include <SimpleTimer.h>
 #include <BlynkSimpleEsp8266.h>
 #include <EEPROM.h>
+#include <Adafruit_NeoPixel.h>
 
 
 // ************************** НАСТРОЙКИ ***********************
@@ -38,6 +39,9 @@ int brightness = BRIGHTNESS;
 CRGB leds[NUM_LEDS];
 CRGBPalette16 gPal;
 
+
+#define BLYNK_PRINT Serial
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 struct {
   byte brightness = 50;
@@ -752,6 +756,18 @@ void fire() {
 }
 
 
+int R = 255;
+int G = 255;
+int B = 255;
+
+void zeGRBA() {
+      for(int i=0;i<NUM_LEDS;i++){
+      pixels.setPixelColor(i, pixels.Color(R,G,B));
+      pixels.show();
+    }
+
+}
+
 
 
 
@@ -897,133 +913,135 @@ void setup() {
     Serial.println("Нет соединения с WiFi"); 
   }
 //------------------------------blynk, точка доступа и wifi----------------------------------------------//
-
-
+ 
+  Blynk.setProperty(V1, "labels","Огонь", "Радуга вертикальная", "Смена цветов", "Конфети", "Матрица", "Светлячки настраиваемые", "Безумие", "Облако", "Лава", "Плазма", "Радуга очередная", "Полоса радуги", "Зебра", "Лес", "Океан", "Бегущий пиксель", "Светлячки", "Радуга обычная", "Свеча", "Цвет на выбор (в зебре)");
   
+
 }
 
 
 BLYNK_WRITE(V1) {
+
   switch (param.asInt())
-  {
-    /*case 1: // Item 1
-      sparklesRoutine();
-      FastLED.show();
-      break;*/
-    
-    case 2: // огонь
+  {    
+    case 1: // огонь
       fireRoutine(); //
       FastLED.show();
       break;    
-/*
-    case 3: // Item 1
-      rainbowVertical(); //
-      FastLED.show();
-      break;    */
 
-    case 4: // Item 1
+
+    case 2: // Item 1
       rainbowHorizontal();//
       FastLED.show();
       break;    
 
-    case 5: // смена цветов
+    case 3: // смена цветов
       colorsRoutine(); 
       FastLED.show();
       break;    
 
-    case 6: // Обычный цвет
-      colorRoutine(); 
-      FastLED.show();
-      break;    
+ 
 
-    case 7: // конфети
+    case 4: // конфети
       snowRoutine(); 
       FastLED.show();
       break;         
 
-    case 8: // матрица
+    case 5: // матрица
       matrixRoutine();
       FastLED.show();
       break;     
 
-    case 9: // Настраиваемые светляки
+    case 6: // Настраиваемые светляки
       lightersRoutine();
       FastLED.show();
       break;       
 
-    case 10: // Безумие
+    case 7: // Безумие
       madnessNoise();
       FastLED.show();
       break;         
 
-    case 11: // Облако
+    case 8: // Облако
       cloudNoise();
       FastLED.show();
       break; 
 
-    case 12: // Лава
+    case 9: // Лава
       lavaNoise();
       FastLED.show();
       break; 
 
-    case 13: // Плазма
+    case 10: // Плазма
       plasmaNoise();
       FastLED.show();
       break; 
 
-    case 14: // Радуга очередная
+    case 11: // Радуга очередная
       rainbowNoise();
       FastLED.show();
       break; 
 
-    case 15: // Полоса радуги
+    case 12: // Полоса радуги
       rainbowStripeNoise();
       FastLED.show();
       break; 
 
-    case 16: // Зебра
+    case 13: // Зебра
       zebraNoise();
       FastLED.show();
       break; 
 
-    case 17: // Лес
+    case 14: // Лес
       forestNoise();
       FastLED.show();
       break;      
       
-    case 18: // Океан
+    case 15: // Океан
       oceanNoise();
       FastLED.show();
       break;                                                                        
 //отобранное
-    case 19: // пиксель 
+    case 16: // пиксель 
       lighter2();
       FastLED.show();
       break; 
 
 
-    case 20: // светляки 
+    case 17: // светляки 
       lightBugs();
       FastLED.show();
       break;       
 
 
-    case 21: // радуга rainbow2
+    case 18: // радуга rainbow2
       rainbow2();
       FastLED.show();
       break;     
 
-    case 22: // Свеча
+    case 19: // Свеча
       fire();
       FastLED.show();
-      break;                
+      break;    
+
+    case 20: // Режим зебры
+      zeGRBA(); 
+      break;                 
 
     default:
       Serial.println("Unknown item selected");
   }
 }
 
-//считываем максимальный показатель влажности с регулятора slider из моб.приложения
+BLYNK_WRITE(V5)
+  {
+    R = param[0].asInt();
+    G = param[1].asInt();
+    B = param[2].asInt();
+  }
+
+
+//считываем максимальный показатель  с регулятора slider из моб.приложения
   BLYNK_WRITE(V2)
   {
     modes[1].brightness = param.asInt(); 
@@ -1044,8 +1062,11 @@ void loop() {
   Blynk.syncVirtual(V2);
   Blynk.syncVirtual(V3);
   Blynk.syncVirtual(V4);
+  Blynk.syncVirtual(V5);
   FastLED.setBrightness(modes[1].brightness);
  
   Blynk.run();//Initiates Blynk
   timer.run();//Initiates SimpleTimer  
+
+  
 }
